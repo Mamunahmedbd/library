@@ -1,0 +1,108 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\library\\library\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}|Library\\Library.csproj|d:\\library\\library\\library\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}|Library\\Library.csproj|solutionrelative:library\\login.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}|Library\\Library.csproj|d:\\library\\library\\library\\borrow.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}|Library\\Library.csproj|solutionrelative:library\\borrow.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}|Library\\Library.csproj|D:\\library\\library\\library\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}|Library\\Library.csproj|solutionrelative:library\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}|Library\\Library.csproj|d:\\library\\library\\library\\adminmanage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}|Library\\Library.csproj|solutionrelative:library\\adminmanage.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}|Library\\Library.csproj|d:\\library\\library\\library\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}|Library\\Library.csproj|solutionrelative:library\\mainform.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Borrow.cs",
+              "DocumentMoniker": "D:\\library\\library\\Library\\Borrow.cs",
+              "RelativeDocumentMoniker": "Library\\Borrow.cs",
+              "ToolTip": "D:\\library\\library\\Library\\Borrow.cs",
+              "RelativeToolTip": "Library\\Borrow.cs",
+              "ViewState": "AgIAAIkAAAAAAAAAAAAewIsAAAAvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-12T06:09:46.171Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Login.cs",
+              "DocumentMoniker": "D:\\library\\library\\Library\\Login.cs",
+              "RelativeDocumentMoniker": "Library\\Login.cs",
+              "ToolTip": "D:\\library\\library\\Library\\Login.cs",
+              "RelativeToolTip": "Library\\Login.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAhwA8AAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-12T05:27:22.779Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "MainForm.cs",
+              "DocumentMoniker": "D:\\library\\library\\Library\\MainForm.cs",
+              "RelativeDocumentMoniker": "Library\\MainForm.cs",
+              "ToolTip": "D:\\library\\library\\Library\\MainForm.cs",
+              "RelativeToolTip": "Library\\MainForm.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACgAAAAgAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-12T04:14:57.077Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "AdminManage.cs",
+              "DocumentMoniker": "D:\\library\\library\\Library\\AdminManage.cs",
+              "RelativeDocumentMoniker": "Library\\AdminManage.cs",
+              "ToolTip": "D:\\library\\library\\Library\\AdminManage.cs",
+              "RelativeToolTip": "Library\\AdminManage.cs",
+              "ViewState": "AgIAACsAAAAAAAAAAAAkwDAAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-12T04:13:22.074Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "MainForm.cs [Design]",
+              "DocumentMoniker": "D:\\library\\library\\Library\\MainForm.cs",
+              "RelativeDocumentMoniker": "Library\\MainForm.cs",
+              "ToolTip": "D:\\library\\library\\Library\\MainForm.cs [Design]",
+              "RelativeToolTip": "Library\\MainForm.cs [Design]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-07-12T01:07:42.411Z",
+              "EditorCaption": " [Design]"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
