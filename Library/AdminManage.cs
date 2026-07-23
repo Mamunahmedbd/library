@@ -1,5 +1,7 @@
 using System;
 using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Library
@@ -11,108 +13,228 @@ namespace Library
         public AdminManage()
         {
             InitializeComponent();
+            this.BackColor = Color.FromArgb(250, 246, 238);
             LoadAdmins();
-        }
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
-                this.ClientRectangle,
-                System.Drawing.Color.FromArgb(74, 50, 34),
-                System.Drawing.Color.FromArgb(42, 27, 18),
-                System.Drawing.Drawing2D.LinearGradientMode.Vertical))
-            {
-                e.Graphics.FillRectangle(brush, this.ClientRectangle);
-            }
         }
 
         private void LoadAdmins()
         {
-            string query = @"SELECT * FROM AdminList ORDER BY AdminID";
+            try
+            {
+                string query = "SELECT AdminID, Username, RealName, Phone FROM AdminList ORDER BY AdminID";
+                DataSet ds = SQLHelper.GetData(query);
+                if (ds != null && ds.Tables.Count > 0)
+                    dtAdmins = ds.Tables[0];
+                else
+                    dtAdmins = new DataTable();
 
-            DataSet ds = SQLHelper.GetData(query);
-            if (ds != null && ds.Tables.Count > 0)
-                dtAdmins = ds.Tables[0];
-            else
-                dtAdmins = new DataTable();
+                dataGridView1.DataSource = dtAdmins;
 
-            dataGridView1.DataSource = dtAdmins;
+                if (string.IsNullOrWhiteSpace(txtAdminID.Text))
+                {
+                    txtAdminID.Text = GenerateNextAdminID();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading admins: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string GenerateNextAdminID()
+        {
+            try
+            {
+                string sql = "SELECT TOP 1 AdminID FROM AdminList WHERE AdminID LIKE 'A%' ORDER BY LEN(AdminID) DESC, AdminID DESC";
+                object val = SQLHelper.ExecuteScalar(sql);
+                if (val != null && !string.IsNullOrEmpty(val.ToString()))
+                {
+                    string currentNum = val.ToString().Substring(1);
+                    if (int.TryParse(currentNum, out int num))
+                    {
+                        return $"A{(num + 1):D3}";
+                    }
+                }
+            }
+            catch { }
+            return "A001";
+        }
+
+        private void ClearInputs()
+        {
+            txtAdminID.Text = GenerateNextAdminID();
+            txtUsername.Clear();
+            txtPassword.Clear();
+            txtRealName.Clear();
+            txtPhone.Clear();
+            txtUsername.Focus();
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
+            ClearInputs();
             LoadAdmins();
         }
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            string insertQuery = string.Format(
-                "INSERT INTO AdminList (AdminID, Username, Password, RealName, Phone) " +
-                "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')",
-                txtAdminID.Text.Trim(),
-                txtUsername.Text.Trim(),
-                txtPassword.Text.Trim(),
-                txtRealName.Text.Trim(),
-                txtPhone.Text.Trim());
+            string adminId = txtAdminID.Text.Trim();
+            string username = txtUsername.Text.Trim();
+            string rawPassword = txtPassword.Text;
+            string realName = txtRealName.Text.Trim();
+            string phone = txtPhone.Text.Trim();
 
-            int n = SQLHelper.ExecuteCmd(insertQuery);
-            if (n > 0)
-                MessageBox.Show("Admin added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else
-                MessageBox.Show("No rows affected.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (string.IsNullOrWhiteSpace(adminId) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(rawPassword))
+            {
+                MessageBox.Show("Admin ID, Username, and Password are required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            LoadAdmins();
+            try
+            {
+                // Securely hash password using PBKDF2
+                string hashedPassword = SecurityHelper.CreateHash(rawPassword);
+
+                string query = @"INSERT INTO AdminList (AdminID, Username, Password, RealName, Phone) 
+                                VALUES (@adminId, @username, @pwd, @realName, @phone)";
+
+                SqlParameter[] parameters = new SqlParameter[]
+                {
+                    new SqlParameter("@adminId", adminId),
+                    new SqlParameter("@username", username),
+                    new SqlParameter("@pwd", hashedPassword),
+                    new SqlParameter("@realName", (object)realName ?? DBNull.Value),
+                    new SqlParameter("@phone", (object)phone ?? DBNull.Value)
+                };
+
+                int n = SQLHelper.ExecuteNonQuery(query, parameters);
+                if (n > 0)
+                {
+                    MessageBox.Show("Admin account created successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ClearInputs();
+                    LoadAdmins();
+                }
+                else
+                {
+                    MessageBox.Show("Failed to create admin account.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error adding admin: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
+
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            string updateQuery = string.Format(
-                "UPDATE AdminList SET Username = '{0}', Password = '{1}', RealName = '{2}', Phone = '{3}' WHERE AdminID = '{4}'",
-                txtUsername.Text.Trim(),
-                txtPassword.Text.Trim(),
-                txtRealName.Text.Trim(),
-                txtPhone.Text.Trim(),
-                txtAdminID.Text.Trim());
+            string adminId = txtAdminID.Text.Trim();
+            string username = txtUsername.Text.Trim();
+            string rawPassword = txtPassword.Text;
+            string realName = txtRealName.Text.Trim();
+            string phone = txtPhone.Text.Trim();
 
-            int n = SQLHelper.ExecuteCmd(updateQuery);
-            if (n > 0)
-                MessageBox.Show("Admin updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else
-                MessageBox.Show("No rows affected.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (string.IsNullOrWhiteSpace(adminId))
+            {
+                MessageBox.Show("Please select an Admin account to update.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            LoadAdmins();
+            try
+            {
+                string query;
+                SqlParameter[] parameters;
+
+                // Update with new hashed password if password field is provided
+                if (!string.IsNullOrWhiteSpace(rawPassword))
+                {
+                    string hashedPassword = SecurityHelper.CreateHash(rawPassword);
+                    query = @"UPDATE AdminList SET Username = @username, Password = @pwd, 
+                             RealName = @realName, Phone = @phone WHERE AdminID = @adminId";
+                    parameters = new SqlParameter[]
+                    {
+                        new SqlParameter("@adminId", adminId),
+                        new SqlParameter("@username", username),
+                        new SqlParameter("@pwd", hashedPassword),
+                        new SqlParameter("@realName", (object)realName ?? DBNull.Value),
+                        new SqlParameter("@phone", (object)phone ?? DBNull.Value)
+                    };
+                }
+                else
+                {
+                    query = @"UPDATE AdminList SET Username = @username, 
+                             RealName = @realName, Phone = @phone WHERE AdminID = @adminId";
+                    parameters = new SqlParameter[]
+                    {
+                        new SqlParameter("@adminId", adminId),
+                        new SqlParameter("@username", username),
+                        new SqlParameter("@realName", (object)realName ?? DBNull.Value),
+                        new SqlParameter("@phone", (object)phone ?? DBNull.Value)
+                    };
+                }
+
+                int n = SQLHelper.ExecuteNonQuery(query, parameters);
+                if (n > 0)
+                {
+                    MessageBox.Show("Admin account updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ClearInputs();
+                    LoadAdmins();
+                }
+                else
+                {
+                    MessageBox.Show("No admin account updated. Check Admin ID.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error updating admin: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            var result = MessageBox.Show("Are you sure you want to delete this Admin?", "Confirm",
-                 MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (result == DialogResult.Yes)
+            string adminId = txtAdminID.Text.Trim();
+            if (string.IsNullOrWhiteSpace(adminId))
             {
-                string deleteQuery = string.Format("DELETE FROM AdminList WHERE AdminID = '{0}'",
-                                                    txtAdminID.Text.Trim());
-
-                int n = SQLHelper.ExecuteCmd(deleteQuery);
-                if (n > 0)
-                    MessageBox.Show("Admin deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                else
-                    MessageBox.Show("No rows affected.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Please select an Admin to delete.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            LoadAdmins();
+            var result = MessageBox.Show($"Are you sure you want to delete Admin account '{adminId}'?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+            {
+                try
+                {
+                    string query = "DELETE FROM AdminList WHERE AdminID = @adminId";
+                    SqlParameter[] parameters = new SqlParameter[] { new SqlParameter("@adminId", adminId) };
+                    int n = SQLHelper.ExecuteNonQuery(query, parameters);
+                    if (n > 0)
+                    {
+                        MessageBox.Show("Admin account deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        ClearInputs();
+                        LoadAdmins();
+                    }
+                    else
+                    {
+                        MessageBox.Show("No admin account deleted.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error deleting admin: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0 && dataGridView1.Rows.Count > e.RowIndex)
+            if (e.RowIndex >= 0 && e.RowIndex < dataGridView1.Rows.Count)
             {
-                DataGridViewRow row = this.dataGridView1.Rows[e.RowIndex];
-
-                txtAdminID.Text = row.Cells["AdminID"].Value?.ToString() ?? string.Empty;
-                txtUsername.Text = row.Cells["Username"].Value?.ToString() ?? string.Empty;
-                txtPassword.Text = row.Cells["Password"].Value?.ToString() ?? string.Empty;
-                txtRealName.Text = row.Cells["RealName"].Value?.ToString() ?? string.Empty;
-                txtPhone.Text = row.Cells["Phone"].Value?.ToString() ?? string.Empty;
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                txtAdminID.Text = row.Cells["AdminID"].Value?.ToString() ?? "";
+                txtUsername.Text = row.Cells["Username"].Value?.ToString() ?? "";
+                txtPassword.Clear(); // Clear password input for security
+                txtRealName.Text = row.Cells["RealName"].Value?.ToString() ?? "";
+                txtPhone.Text = row.Cells["Phone"].Value?.ToString() ?? "";
             }
         }
 
@@ -129,14 +251,14 @@ namespace Library
                 return;
             }
 
-            string filter = $"AdminID LIKE '%{term}%' OR Username LIKE '%{term}%' OR RealName LIKE '%{term}%'";
+            string filter = $"AdminID LIKE '%{term}%' OR Username LIKE '%{term}%' OR RealName LIKE '%{term}%' OR Phone LIKE '%{term}%'";
             try
             {
                 dtAdmins.DefaultView.RowFilter = filter;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Invalid filter expression: {ex.Message}", "Filter Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"Filter error: {ex.Message}", "Filter Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
     }

@@ -1,7 +1,7 @@
 using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace Library
@@ -13,102 +13,180 @@ namespace Library
         public BookCategory()
         {
             InitializeComponent();
+            this.BackColor = Color.FromArgb(250, 246, 238);
             LoadCategories();
-        }
-
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            using (var brush = new LinearGradientBrush(
-                this.ClientRectangle,
-                Color.FromArgb(74, 50, 34),
-                Color.FromArgb(42, 27, 18),
-                LinearGradientMode.Vertical))
-            {
-                e.Graphics.FillRectangle(brush, this.ClientRectangle);
-            }
         }
 
         private void LoadCategories()
         {
-            string query = "SELECT CategoryID, CategoryName, Description FROM BookCategory ORDER BY CategoryID";
-            DataSet ds = SQLHelper.GetData(query);
-            if (ds != null && ds.Tables.Count > 0)
-                dtCategories = ds.Tables[0];
-            else
-                dtCategories = new DataTable();
+            try
+            {
+                string query = "SELECT CategoryID, CategoryName, Description FROM BookCategory ORDER BY CategoryID";
+                DataSet ds = SQLHelper.GetData(query);
+                if (ds != null && ds.Tables.Count > 0)
+                    dtCategories = ds.Tables[0];
+                else
+                    dtCategories = new DataTable();
 
-            dataGridView1.DataSource = dtCategories;
+                dataGridView1.DataSource = dtCategories;
+                
+                // Auto-suggest next ID if ID box is empty
+                if (string.IsNullOrWhiteSpace(txtCategoryID.Text))
+                {
+                    txtCategoryID.Text = GenerateNextCategoryID();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading categories: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string GenerateNextCategoryID()
+        {
+            try
+            {
+                string sql = "SELECT TOP 1 CategoryID FROM BookCategory WHERE CategoryID LIKE 'C%' ORDER BY LEN(CategoryID) DESC, CategoryID DESC";
+                object val = SQLHelper.ExecuteScalar(sql);
+                if (val != null && !string.IsNullOrEmpty(val.ToString()))
+                {
+                    string currentNum = val.ToString().Substring(1);
+                    if (int.TryParse(currentNum, out int num))
+                    {
+                        return $"C{(num + 1):D3}";
+                    }
+                }
+            }
+            catch { }
+            return "C001";
+        }
+
+        private void ClearInputs()
+        {
+            txtCategoryID.Text = GenerateNextCategoryID();
+            txtCategoryName.Clear();
+            txtDescription.Clear();
+            txtCategoryName.Focus();
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
+            ClearInputs();
             LoadCategories();
         }
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtCategoryID.Text) || string.IsNullOrWhiteSpace(txtCategoryName.Text))
+            string catId = txtCategoryID.Text.Trim();
+            string catName = txtCategoryName.Text.Trim();
+            string desc = txtDescription.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(catId) || string.IsNullOrWhiteSpace(catName))
             {
-                MessageBox.Show("CategoryID and CategoryName are required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Category ID and Category Name are required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string query = "INSERT INTO BookCategory (CategoryID, CategoryName, Description) VALUES ('" +
-                txtCategoryID.Text.Trim().Replace("'", "''") + "', '" +
-                txtCategoryName.Text.Trim().Replace("'", "''") + "', '" +
-                txtDescription.Text.Trim().Replace("'", "''") + "')";
+            try
+            {
+                string query = "INSERT INTO BookCategory (CategoryID, CategoryName, Description) VALUES (@id, @name, @desc)";
+                SqlParameter[] parameters = new SqlParameter[]
+                {
+                    new SqlParameter("@id", catId),
+                    new SqlParameter("@name", catName),
+                    new SqlParameter("@desc", (object)desc ?? DBNull.Value)
+                };
 
-            int n = SQLHelper.ExecuteCmd(query);
-            if (n > 0)
-                MessageBox.Show("Category added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else
-                MessageBox.Show("No rows affected.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            LoadCategories();
+                int n = SQLHelper.ExecuteNonQuery(query, parameters);
+                if (n > 0)
+                {
+                    MessageBox.Show("Category added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ClearInputs();
+                    LoadCategories();
+                }
+                else
+                {
+                    MessageBox.Show("Failed to add category.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error adding category: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtCategoryID.Text))
+            string catId = txtCategoryID.Text.Trim();
+            string catName = txtCategoryName.Text.Trim();
+            string desc = txtDescription.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(catId))
             {
                 MessageBox.Show("Please select a Category to update.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string query = "UPDATE BookCategory SET CategoryName = '" +
-                txtCategoryName.Text.Trim().Replace("'", "''") + "', Description = '" +
-                txtDescription.Text.Trim().Replace("'", "''") + "' WHERE CategoryID = '" +
-                txtCategoryID.Text.Trim().Replace("'", "''") + "'";
+            try
+            {
+                string query = "UPDATE BookCategory SET CategoryName = @name, Description = @desc WHERE CategoryID = @id";
+                SqlParameter[] parameters = new SqlParameter[]
+                {
+                    new SqlParameter("@id", catId),
+                    new SqlParameter("@name", catName),
+                    new SqlParameter("@desc", (object)desc ?? DBNull.Value)
+                };
 
-            int n = SQLHelper.ExecuteCmd(query);
-            if (n > 0)
-                MessageBox.Show("Category updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else
-                MessageBox.Show("No rows affected.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            LoadCategories();
+                int n = SQLHelper.ExecuteNonQuery(query, parameters);
+                if (n > 0)
+                {
+                    MessageBox.Show("Category updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ClearInputs();
+                    LoadCategories();
+                }
+                else
+                {
+                    MessageBox.Show("No rows updated. Please check the Category ID.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error updating category: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtCategoryID.Text))
+            string catId = txtCategoryID.Text.Trim();
+            if (string.IsNullOrWhiteSpace(catId))
             {
                 MessageBox.Show("Please select a Category to delete.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            var result = MessageBox.Show("Are you sure you want to delete this Category?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            var result = MessageBox.Show($"Are you sure you want to delete Category '{catId}'?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             if (result == DialogResult.Yes)
             {
-                string query = "DELETE FROM BookCategory WHERE CategoryID = '" + txtCategoryID.Text.Trim().Replace("'", "''") + "'";
-                int n = SQLHelper.ExecuteCmd(query);
-                if (n > 0)
-                    MessageBox.Show("Category deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                else
-                    MessageBox.Show("No rows affected.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                LoadCategories();
+                try
+                {
+                    string query = "DELETE FROM BookCategory WHERE CategoryID = @id";
+                    SqlParameter[] parameters = new SqlParameter[] { new SqlParameter("@id", catId) };
+                    int n = SQLHelper.ExecuteNonQuery(query, parameters);
+                    if (n > 0)
+                    {
+                        MessageBox.Show("Category deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        ClearInputs();
+                        LoadCategories();
+                    }
+                    else
+                    {
+                        MessageBox.Show("No category was deleted.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error deleting category: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -128,7 +206,7 @@ namespace Library
             if (dtCategories != null)
             {
                 string term = textBox1.Text.Trim().Replace("'", "''");
-                dtCategories.DefaultView.RowFilter = $"CategoryID LIKE '%{term}%' OR CategoryName LIKE '%{term}%'";
+                dtCategories.DefaultView.RowFilter = $"CategoryID LIKE '%{term}%' OR CategoryName LIKE '%{term}%' OR Description LIKE '%{term}%'";
             }
         }
     }

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Library
@@ -13,123 +9,235 @@ namespace Library
     public partial class Reader : Form
     {
         private DataTable dtReaders;
+
         public Reader()
         {
             InitializeComponent();
+            this.BackColor = Color.FromArgb(250, 246, 238);
             loadReaders();
-        }
-        protected override void OnPaint(PaintEventArgs e)
-        {
-            base.OnPaint(e);
-            using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
-                this.ClientRectangle,
-                System.Drawing.Color.FromArgb(74, 50, 34),
-                System.Drawing.Color.FromArgb(42, 27, 18),
-                System.Drawing.Drawing2D.LinearGradientMode.Vertical))
-            {
-                e.Graphics.FillRectangle(brush, this.ClientRectangle);
-            }
-        }
-        private void loadReaders()
-        {
-            string query = @"SELECT b.*
-                            FROM readerInfo b                           
-                            ORDER BY b.ReaderID";
-
-
-            DataSet ds = SQLHelper.GetData(query);
-            if (ds != null && ds.Tables.Count > 0)
-                dtReaders = ds.Tables[0];
-            else
-                dtReaders = new DataTable();
-
-            dataGridView1.DataSource = dtReaders;
-        
         }
 
         private void Reader_Load(object sender, EventArgs e)
         {
-
+            if (comboBox1.Items.Count > 0 && comboBox1.SelectedIndex < 0)
+            {
+                comboBox1.SelectedIndex = 0;
+            }
         }
 
-        private void btnExit_Click(object sender, EventArgs e)
+        private void loadReaders()
         {
-            Application.Exit();
+            try
+            {
+                string query = "SELECT ReaderID, ReaderName, Gender, Phone, Address FROM ReaderInfo ORDER BY ReaderID";
+                DataSet ds = SQLHelper.GetData(query);
+                if (ds != null && ds.Tables.Count > 0)
+                    dtReaders = ds.Tables[0];
+                else
+                    dtReaders = new DataTable();
+
+                dataGridView1.DataSource = dtReaders;
+
+                if (string.IsNullOrWhiteSpace(txtReaderID.Text))
+                {
+                    txtReaderID.Text = GenerateNextReaderID();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading readers: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string GenerateNextReaderID()
+        {
+            try
+            {
+                string sql = "SELECT TOP 1 ReaderID FROM ReaderInfo WHERE ReaderID LIKE 'R%' ORDER BY LEN(ReaderID) DESC, ReaderID DESC";
+                object val = SQLHelper.ExecuteScalar(sql);
+                if (val != null && !string.IsNullOrEmpty(val.ToString()))
+                {
+                    string currentNum = val.ToString().Substring(1);
+                    if (int.TryParse(currentNum, out int num))
+                    {
+                        return $"R{(num + 1):D3}";
+                    }
+                }
+            }
+            catch { }
+            return "R001";
+        }
+
+        private void ClearInputs()
+        {
+            txtReaderID.Text = GenerateNextReaderID();
+            txtReaderName.Clear();
+            txtPhone.Clear();
+            txtAddress.Clear();
+            if (comboBox1.Items.Count > 0) comboBox1.SelectedIndex = 0;
+            txtReaderName.Focus();
         }
 
         private void btnRefresh_Click(object sender, EventArgs e)
         {
+            ClearInputs();
             loadReaders();
         }
 
-        private void btnDelete_Click(object sender, EventArgs e)
+        private void btnExit_Click(object sender, EventArgs e)
         {
-            var result = MessageBox.Show("Are you sure you want to delete this reader?", "Confirm",
-                   MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (result == DialogResult.Yes)
-            {
-
-                string deleteQuery = string.Format("DELETE FROM ReaderInfo WHERE ReaderID = '{0}'",
-                                                    txtReaderID.Text.Trim());
-
-                int n = SQLHelper.ExecuteCmd(deleteQuery);
-                if (n > 0)
-                    MessageBox.Show("Reader deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                else
-                    MessageBox.Show("No rows affected.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            loadReaders();
+            this.Close();
         }
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            string insertQuery = string.Format(
-                       "INSERT INTO ReaderInfo (ReaderID, ReaderName, Gender, Phone, Address) " +
-                       "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')",
-                       txtReaderID.Text.Trim(),
-                       txtReaderName.Text.Trim(),
-                       this.comboBox1.SelectedItem.ToString(),
-                       txtPhone.Text.Trim().Replace("'", "''"),
-                       txtAddress.Text.Trim().Replace("'", "''")                       
-                   );
+            string readerId = txtReaderID.Text.Trim();
+            string readerName = txtReaderName.Text.Trim();
+            string gender = comboBox1.SelectedItem?.ToString() ?? "Male";
+            string phone = txtPhone.Text.Trim();
+            string address = txtAddress.Text.Trim();
 
-            int n = SQLHelper.ExecuteCmd(insertQuery);
-            if (n > 0)
-                MessageBox.Show("Reader added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else
-                MessageBox.Show("No rows affected.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            loadReaders();
+            if (string.IsNullOrWhiteSpace(readerId) || string.IsNullOrWhiteSpace(readerName))
+            {
+                MessageBox.Show("Reader ID and Reader Name are required.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                string query = @"INSERT INTO ReaderInfo (ReaderID, ReaderName, Gender, Phone, Address) 
+                                VALUES (@readerId, @readerName, @gender, @phone, @address)";
+
+                SqlParameter[] parameters = new SqlParameter[]
+                {
+                    new SqlParameter("@readerId", readerId),
+                    new SqlParameter("@readerName", readerName),
+                    new SqlParameter("@gender", (object)gender ?? DBNull.Value),
+                    new SqlParameter("@phone", (object)phone ?? DBNull.Value),
+                    new SqlParameter("@address", (object)address ?? DBNull.Value)
+                };
+
+                int n = SQLHelper.ExecuteNonQuery(query, parameters);
+                if (n > 0)
+                {
+                    MessageBox.Show("Reader added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ClearInputs();
+                    loadReaders();
+                }
+                else
+                {
+                    MessageBox.Show("Failed to add reader.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error adding reader: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnUpdate_Click(object sender, EventArgs e)
         {
-            string updateQuery = string.Format(
-                          "UPDATE ReaderInfo SET ReaderName = '{0}', Gender = '{1}', Phone = '{2}', Address = '{3}' WHERE ReaderID = '{4}'",
-                       txtReaderName.Text.Trim(),
-                       this.comboBox1.SelectedItem.ToString(),
-                       txtPhone.Text.Trim().Replace("'", "''"),
-                       txtAddress.Text.Trim().Replace("'", "''"),
-                       txtReaderID.Text.Trim());
-            int n = SQLHelper.ExecuteCmd(updateQuery);
-            if (n > 0)
-                MessageBox.Show("Reader updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            else
-                MessageBox.Show("No rows affected.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            loadReaders();
+            string readerId = txtReaderID.Text.Trim();
+            string readerName = txtReaderName.Text.Trim();
+            string gender = comboBox1.SelectedItem?.ToString() ?? "Male";
+            string phone = txtPhone.Text.Trim();
+            string address = txtAddress.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(readerId))
+            {
+                MessageBox.Show("Please select a Reader to update.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                string query = @"UPDATE ReaderInfo SET ReaderName = @readerName, Gender = @gender, 
+                                Phone = @phone, Address = @address WHERE ReaderID = @readerId";
+
+                SqlParameter[] parameters = new SqlParameter[]
+                {
+                    new SqlParameter("@readerId", readerId),
+                    new SqlParameter("@readerName", readerName),
+                    new SqlParameter("@gender", (object)gender ?? DBNull.Value),
+                    new SqlParameter("@phone", (object)phone ?? DBNull.Value),
+                    new SqlParameter("@address", (object)address ?? DBNull.Value)
+                };
+
+                int n = SQLHelper.ExecuteNonQuery(query, parameters);
+                if (n > 0)
+                {
+                    MessageBox.Show("Reader updated successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ClearInputs();
+                    loadReaders();
+                }
+                else
+                {
+                    MessageBox.Show("No reader was updated. Check Reader ID.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error updating reader: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnDelete_Click(object sender, EventArgs e)
+        {
+            string readerId = txtReaderID.Text.Trim();
+            if (string.IsNullOrWhiteSpace(readerId))
+            {
+                MessageBox.Show("Please select a Reader to delete.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var result = MessageBox.Show($"Are you sure you want to delete Reader '{readerId}'?", "Confirm Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+            {
+                try
+                {
+                    string query = "DELETE FROM ReaderInfo WHERE ReaderID = @readerId";
+                    SqlParameter[] parameters = new SqlParameter[] { new SqlParameter("@readerId", readerId) };
+                    int n = SQLHelper.ExecuteNonQuery(query, parameters);
+                    if (n > 0)
+                    {
+                        MessageBox.Show("Reader deleted successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        ClearInputs();
+                        loadReaders();
+                    }
+                    else
+                    {
+                        MessageBox.Show("No reader was deleted.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Error deleting reader: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex >= 0)
+            if (e.RowIndex >= 0 && e.RowIndex < dataGridView1.Rows.Count)
             {
-                DataGridViewRow row = this.dataGridView1.Rows[e.RowIndex];
-                txtReaderID.Text = row.Cells["ReaderID"].Value.ToString();
-                txtReaderName.Text = row.Cells["ReaderName"].Value.ToString();
-                comboBox1.SelectedItem = row.Cells["Gender"].Value.ToString();
-                txtPhone.Text = row.Cells["Phone"].Value.ToString();
-                txtAddress.Text = row.Cells["Address"].Value.ToString();
-               
+                DataGridViewRow row = dataGridView1.Rows[e.RowIndex];
+                txtReaderID.Text = row.Cells["ReaderID"].Value?.ToString() ?? "";
+                txtReaderName.Text = row.Cells["ReaderName"].Value?.ToString() ?? "";
+                txtPhone.Text = row.Cells["Phone"].Value?.ToString() ?? "";
+                txtAddress.Text = row.Cells["Address"].Value?.ToString() ?? "";
+
+                string g = row.Cells["Gender"].Value?.ToString() ?? "";
+                if (!string.IsNullOrEmpty(g))
+                {
+                    for (int i = 0; i < comboBox1.Items.Count; i++)
+                    {
+                        if (comboBox1.Items[i].ToString().Equals(g, StringComparison.OrdinalIgnoreCase))
+                        {
+                            comboBox1.SelectedIndex = i;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -137,8 +245,8 @@ namespace Library
         {
             if (dtReaders != null)
             {
-                string filter = "ReaderID LIKE '%" + this.textBox1.Text + "%' OR ReaderName LIKE '%" + this.textBox1.Text + "%' OR Gender LIKE '%" + this.textBox1.Text + "%'";
-                dtReaders.DefaultView.RowFilter = filter;
+                string term = textBox1.Text.Trim().Replace("'", "''");
+                dtReaders.DefaultView.RowFilter = $"ReaderID LIKE '%{term}%' OR ReaderName LIKE '%{term}%' OR Phone LIKE '%{term}%' OR Address LIKE '%{term}%' OR Gender LIKE '%{term}%'";
             }
         }
     }

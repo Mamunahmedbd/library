@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Library
@@ -17,19 +11,95 @@ namespace Library
         private DataTable dtBorrows;
         private DataTable dtBooks;
         private DataTable dtReaders;
-        private int borrowDays = 30; // Default borrow days, can be adjusted based on category
+        private int borrowDays = 30; // Standard 30-day borrow period
 
         public Borrow()
         {
             InitializeComponent();
+            this.BackColor = Color.FromArgb(250, 246, 238);
+            dtpBorrowDate.Value = DateTime.Now;
+            dtpDueDate.Value = DateTime.Now.AddDays(borrowDays);
+            
             loadBorrows();
             LoadAvailableBooks();
             LoadReaders();
         }
 
-        private void btnCancel_Click(object sender, EventArgs e)
+        private void loadBorrows()
         {
-            this.Close();
+            try
+            {
+                string query = @"SELECT b.RecordID, b.BookID, bk.BookName, b.ReaderID, r.ReaderName, 
+                                b.BorrowDate, b.DueDate, b.ReturnDate, b.IsReturn, b.Remark
+                                FROM BorrowRecord b
+                                INNER JOIN BookInfo bk ON b.BookID = bk.BookID
+                                INNER JOIN ReaderInfo r ON b.ReaderID = r.ReaderID
+                                WHERE b.IsReturn = 'borrowed'
+                                ORDER BY b.BorrowDate DESC";
+
+                DataSet ds = SQLHelper.GetData(query);
+                if (ds != null && ds.Tables.Count > 0)
+                    dtBorrows = ds.Tables[0];
+                else
+                    dtBorrows = new DataTable();
+
+                this.dgvBorrowHistory.DataSource = dtBorrows;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading active borrow records: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadAvailableBooks()
+        {
+            try
+            {
+                dtpDueDate.Value = dtpBorrowDate.Value.AddDays(borrowDays);
+
+                string query = @"SELECT BookID, (BookID + ' - ' + BookName) AS DisplayTitle
+                                FROM BookInfo a
+                                WHERE NOT EXISTS (SELECT 1 FROM BorrowRecord b WHERE a.BookID = b.BookID AND b.IsReturn = 'borrowed')
+                                ORDER BY BookName";
+
+                DataSet ds = SQLHelper.GetData(query);
+                if (ds != null && ds.Tables.Count > 0)
+                    dtBooks = ds.Tables[0];
+                else
+                    dtBooks = new DataTable();
+
+                cboBook.DataSource = dtBooks;
+                cboBook.DisplayMember = "DisplayTitle";
+                cboBook.ValueMember = "BookID";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading available books: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadReaders()
+        {
+            try
+            {
+                string query = @"SELECT ReaderID, (ReaderID + ' - ' + ReaderName) AS DisplayName
+                                FROM ReaderInfo
+                                ORDER BY ReaderName";
+
+                DataSet ds = SQLHelper.GetData(query);
+                if (ds != null && ds.Tables.Count > 0)
+                    dtReaders = ds.Tables[0];
+                else
+                    dtReaders = new DataTable();
+
+                cboReader.DataSource = dtReaders;
+                cboReader.DisplayMember = "DisplayName";
+                cboReader.ValueMember = "ReaderID";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error loading readers: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void btnBorrow_Click(object sender, EventArgs e)
@@ -38,7 +108,7 @@ namespace Library
             {
                 if (cboBook.SelectedValue == null || cboReader.SelectedValue == null)
                 {
-                    MessageBox.Show("Please select a book and a reader!", "Warning",
+                    MessageBox.Show("Please select a book and a reader.", "Validation Warning",
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
@@ -46,13 +116,13 @@ namespace Library
                 string recordId = "L" + DateTime.Now.ToString("yyyyMMddHHmmssfff");
                 string bookId = cboBook.SelectedValue.ToString();
                 string readerId = cboReader.SelectedValue.ToString();
-                string borrowDate = dtpBorrowDate.Value.ToString("yyyy-MM-dd");
-                string dueDate = dtpDueDate.Value.ToString("yyyy-MM-dd");
-                string remark = txtRemark.Text.Trim() ?? "";
+                DateTime borrowDate = dtpBorrowDate.Value;
+                DateTime dueDate = dtpDueDate.Value;
+                string remark = txtRemark.Text.Trim();
 
-                // Insert borrow record
-                string insertQuery = @"INSERT INTO BorrowRecord (RecordID, BookID, ReaderID, BorrowDate,DueDate, Remark,IsReturn) 
-                                      VALUES (@recordId, @bookId, @readerId, @borrowDate,@dueDate,@remark,@isReturn)";
+                string insertQuery = @"INSERT INTO BorrowRecord (RecordID, BookID, ReaderID, BorrowDate, DueDate, Remark, IsReturn) 
+                                      VALUES (@recordId, @bookId, @readerId, @borrowDate, @dueDate, @remark, 'borrowed')";
+
                 SqlParameter[] insertParams = new SqlParameter[]
                 {
                     new SqlParameter("@recordId", recordId),
@@ -60,115 +130,93 @@ namespace Library
                     new SqlParameter("@readerId", readerId),
                     new SqlParameter("@borrowDate", borrowDate),
                     new SqlParameter("@dueDate", dueDate),
-                    new SqlParameter("@remark",  (object)remark ?? DBNull.Value),
-                    new SqlParameter("@isReturn","borrowed")
+                    new SqlParameter("@remark", string.IsNullOrEmpty(remark) ? DBNull.Value : (object)remark)
                 };
 
                 int n = SQLHelper.ExecuteNonQuery(insertQuery, insertParams);
 
                 if (n > 0)
-                    MessageBox.Show($"Book borrowed successfully!\nDue date: {dtpBorrowDate.Value.AddDays(borrowDays).ToShortDateString()}",
-                    "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                else
-                    MessageBox.Show("No book borrowed.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                loadBorrows();
-                LoadAvailableBooks();
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-        private void loadBorrows()
-        {
-            string query = @"SELECT b.RecordID, b.BookID, bk.BookName, b.ReaderID, r.ReaderName, 
-                            b.BorrowDate,b.DueDate, b.ReturnDate, b.IsReturn,b.Remark
-                            FROM BorrowRecord b,BookInfo bk, ReaderInfo r
-                            WHERE b.BookID = bk.BookID
-                                    AND b.ReaderID = r.ReaderID
-                                    AND b.IsReturn = 'borrowed'
-                            ORDER BY b.BorrowDate";
-            DataSet ds = SQLHelper.GetData(query);
-            if (ds != null && ds.Tables.Count > 0)
-                dtBorrows = ds.Tables[0];
-            else
-                dtBorrows = new DataTable();
-
-            this.dgvBorrowHistory.DataSource = dtBorrows;
-        }
-
-        private void LoadAvailableBooks()
-        {
-            dtpDueDate.Value = dtpBorrowDate.Value.AddDays(borrowDays);
-            // load books
-            string query = @"SELECT BookID,BookName
-                    FROM BookInfo a
-                    WHERE NOT EXISTS (SELECT 1 FROM BorrowRecord b WHERE a.BookID=b.BookID and IsReturn='borrowed')
-                    ORDER BY BookName";
-
-            DataSet ds = SQLHelper.GetData(query);
-            if (ds != null && ds.Tables.Count > 0)
-                dtBooks = ds.Tables[0];
-            else
-                dtBooks = new DataTable();
-
-            cboBook.DataSource = dtBooks;
-            cboBook.DisplayMember = "BookName";
-            cboBook.ValueMember = "BookID";
-        }
-        private void LoadReaders()
-        {
-            // load readers
-            string query1 = @" SELECT ReaderID,ReaderName
-                FROM ReaderInfo
-                ORDER BY ReaderName";
-
-            DataSet ds1 = SQLHelper.GetData(query1);
-            if (ds1 != null && ds1.Tables.Count > 0)
-                dtReaders = ds1.Tables[0];
-            else
-                dtReaders = new DataTable();
-
-            cboReader.DataSource = dtReaders;
-            cboReader.DisplayMember = "ReaderName";
-            cboReader.ValueMember = "ReaderID";
-
-        }
-
-        private void btnReturn_Click(object sender, EventArgs e)
-        {
-            if (selected < 0 || selected >= dtBorrows.Rows.Count)
-            {
-                MessageBox.Show("Please select a borrow record to return.", "Warning",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-            else
-            {   //取选中行
-                DataGridViewRow row = this.dgvBorrowHistory.Rows[selected];
-
-                string recordID = row.Cells["RecordID"].Value.ToString();
-                string query = "UPDATE BorrowRecord SET IsReturn='returned', ReturnDate=GETDATE() WHERE RecordID=@id";
-                SqlParameter[] pms = new SqlParameter[] { new SqlParameter("@id", recordID) };
-                int n = SQLHelper.ExecuteNonQuery(query, pms);
-                if (n > 0)
                 {
-                    MessageBox.Show("Book returned successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Book borrowed successfully!\nDue Date: {dueDate.ToShortDateString()}",
+                        "Transaction Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    txtRemark.Clear();
                     loadBorrows();
                     LoadAvailableBooks();
                 }
                 else
                 {
-                    MessageBox.Show("No book returned.", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show("Borrow transaction failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error processing borrow transaction: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
-        private int selected = -1;
+
+        private void btnReturn_Click(object sender, EventArgs e)
+        {
+            if (dgvBorrowHistory.CurrentRow == null || dgvBorrowHistory.CurrentRow.Index < 0)
+            {
+                MessageBox.Show("Please select a borrow record from the table to return.", "Validation Warning",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+                DataGridViewRow row = dgvBorrowHistory.CurrentRow;
+                string recordID = row.Cells["RecordID"].Value?.ToString();
+
+                if (string.IsNullOrEmpty(recordID))
+                {
+                    MessageBox.Show("Invalid record selected.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                string bookName = row.Cells["BookName"].Value?.ToString() ?? "the book";
+                string readerName = row.Cells["ReaderName"].Value?.ToString() ?? "the reader";
+
+                var confirm = MessageBox.Show($"Confirm return of '{bookName}' from '{readerName}'?", "Confirm Return",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (confirm == DialogResult.Yes)
+                {
+                    string query = "UPDATE BorrowRecord SET IsReturn = 'returned', ReturnDate = GETDATE() WHERE RecordID = @id";
+                    SqlParameter[] pms = new SqlParameter[] { new SqlParameter("@id", recordID) };
+                    int n = SQLHelper.ExecuteNonQuery(query, pms);
+
+                    if (n > 0)
+                    {
+                        MessageBox.Show("Book returned successfully to inventory!", "Return Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        loadBorrows();
+                        LoadAvailableBooks();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Return transaction failed.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error processing return: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void dtpBorrowDate_ValueChanged(object sender, EventArgs e)
+        {
+            dtpDueDate.Value = dtpBorrowDate.Value.AddDays(borrowDays);
+        }
+
         private void dgvBorrowHistory_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            selected = e.RowIndex;
+            // Grid cell click selection handled automatically via DataGridView CurrentRow
         }
     }
 }
