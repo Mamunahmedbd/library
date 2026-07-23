@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # SQL Server Management Studio Version 22
 VisualStudioVersion = 18.7.11919.86 stable
@@ -17,9 +17,6 @@ Global
 		{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}.Default|Any CPU.ActiveCfg = Release|Any CPU
 		{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8E1D69B-07E1-4F36-A43E-7BB60B2A9440}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F5052E25-0B7E-4207-84A5-4851D1D93EDD}.Debug|Any CPU.ActiveCfg = Default
-		{F5052E25-0B7E-4207-84A5-4851D1D93EDD}.Default|Any CPU.ActiveCfg = Default
-		{F5052E25-0B7E-4207-84A5-4851D1D93EDD}.Release|Any CPU.ActiveCfg = Default
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
