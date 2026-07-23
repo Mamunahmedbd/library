@@ -1,15 +1,15 @@
 -- =============================================
 -- Database Schema for Library Management System
--- Initial Catalog: LibraryDB
+-- Initial Catalog: library
 -- =============================================
 
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = N'LibraryDB')
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = N'library')
 BEGIN
-    CREATE DATABASE [LibraryDB];
+    CREATE DATABASE [library];
 END
 GO
 
-USE [LibraryDB];
+USE [library];
 GO
 
 -- 1. Admin Table

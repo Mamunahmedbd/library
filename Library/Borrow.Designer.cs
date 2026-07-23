@@ -1,4 +1,4 @@
-﻿namespace Library
+namespace Library
 {
     partial class Borrow
     {
@@ -206,7 +206,8 @@
             this.Controls.Add(this.lblTitle);
             this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "Borrow";
-            this.Text = "Borrow";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Borrow / Return Management";
             ((System.ComponentModel.ISupportInitialize)(this.dgvBorrowHistory)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

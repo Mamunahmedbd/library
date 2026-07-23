@@ -1,8 +1,8 @@
 -- =============================================
--- Initial Data Seed Script for LibraryDB
+-- Initial Data Seed Script for library
 -- =============================================
 
-USE [LibraryDB];
+USE [library];
 GO
 
 -- 1. Seed Admins

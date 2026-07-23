@@ -16,6 +16,57 @@ namespace Library
         private void Login_Load(object sender, EventArgs e)
         {
             tbUserName.Focus();
+            LoadBannerImage();
+            CenterLayout();
+        }
+
+        private void Login_Resize(object sender, EventArgs e)
+        {
+            CenterLayout();
+        }
+
+        private void LoadBannerImage()
+        {
+            try
+            {
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string[] candidatePaths = new string[]
+                {
+                    System.IO.Path.Combine(baseDir, "Resources", "library_banner.png"),
+                    System.IO.Path.Combine(baseDir, "..", "..", "Resources", "library_banner.png"),
+                    System.IO.Path.Combine(baseDir, "Resources", "loginBackgroud.jpg")
+                };
+
+                foreach (string path in candidatePaths)
+                {
+                    if (System.IO.File.Exists(path))
+                    {
+                        if (picHero != null)
+                        {
+                            picHero.Image = Image.FromFile(path);
+                        }
+                        break;
+                    }
+                }
+            }
+            catch
+            {
+                // Graceful fallback if image load fails
+            }
+        }
+
+        private void CenterLayout()
+        {
+            if (panel1 == null) return;
+
+            int left = (this.ClientSize.Width - panel1.Width) / 2;
+            int top = (this.ClientSize.Height - panel1.Height) / 2;
+
+            if (left < 15) left = 15;
+            if (top < 15) top = 15;
+
+            panel1.Left = left;
+            panel1.Top = top;
         }
 
         private void btnLogin_Click(object sender, EventArgs e)

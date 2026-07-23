@@ -10,7 +10,7 @@ Write-Host "[1/3] Ensuring SQL Server LocalDB service is running..." -Foreground
 sqllocaldb start MSSQLLocalDB | Out-Null
 
 # 2. Seed Database
-Write-Host "[2/3] Initializing Database Schema & Seed Data (LibraryDB)..." -ForegroundColor Yellow
+Write-Host "[2/3] Initializing Database Schema & Seed Data (library)..." -ForegroundColor Yellow
 $schemaPath = Join-Path $PSScriptRoot "Library\Database\schema.sql"
 $seedPath = Join-Path $PSScriptRoot "Library\Database\seed.sql"
 sqlcmd -S "(localdb)\MSSQLLocalDB" -i $schemaPath | Out-Null

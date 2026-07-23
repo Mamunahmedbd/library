@@ -12,7 +12,7 @@ namespace Library
     public class SQLHelper
     {
         //1、Create Database 建立数据库连接串
-        static string connStr = "Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=LibraryDB;Data Source=(localdb)\\MSSQLLocalDB";
+        static string connStr = "Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=library;Data Source=(localdb)\\MSSQLLocalDB";
         //Method to query data from HouseDB
         public static DataSet GetData(string sqlStr)
         {

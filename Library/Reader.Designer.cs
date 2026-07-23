@@ -1,4 +1,4 @@
-﻿namespace Library
+namespace Library
 {
     partial class Reader
     {
@@ -343,7 +343,8 @@
             this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.label1);
             this.Name = "Reader";
-            this.Text = " !";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Reader Management";
             this.Load += new System.EventHandler(this.Reader_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.groupBox1.ResumeLayout(false);
