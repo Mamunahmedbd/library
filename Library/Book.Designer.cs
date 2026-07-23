@@ -57,7 +57,7 @@ namespace Library
             this.label1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(58)))), ((int)(((byte)(39)))), ((int)(((byte)(26)))));
             this.label1.Location = new System.Drawing.Point(25, 20);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(115, 21);
+            this.label1.Size = new System.Drawing.Size(125, 21);
             this.label1.TabIndex = 0;
             this.label1.Text = "🔍 Search Book:";
             // 
@@ -67,7 +67,7 @@ namespace Library
             this.textBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.textBox1.Font = new System.Drawing.Font("Segoe UI", 10F);
             this.textBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(43)))), ((int)(((byte)(27)))), ((int)(((byte)(18)))));
-            this.textBox1.Location = new System.Drawing.Point(145, 16);
+            this.textBox1.Location = new System.Drawing.Point(160, 16);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(350, 30);
             this.textBox1.TabIndex = 1;
@@ -117,9 +117,9 @@ namespace Library
             this.txtBookID.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(246)))), ((int)(((byte)(238)))));
             this.txtBookID.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtBookID.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this.txtBookID.Location = new System.Drawing.Point(90, 30);
+            this.txtBookID.Location = new System.Drawing.Point(105, 30);
             this.txtBookID.Name = "txtBookID";
-            this.txtBookID.Size = new System.Drawing.Size(120, 29);
+            this.txtBookID.Size = new System.Drawing.Size(110, 29);
             this.txtBookID.TabIndex = 1;
             // 
             // lblBookName
@@ -127,7 +127,7 @@ namespace Library
             this.lblBookName.AutoSize = true;
             this.lblBookName.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblBookName.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(75)))), ((int)(((byte)(59)))));
-            this.lblBookName.Location = new System.Drawing.Point(225, 33);
+            this.lblBookName.Location = new System.Drawing.Point(230, 33);
             this.lblBookName.Name = "lblBookName";
             this.lblBookName.Size = new System.Drawing.Size(83, 20);
             this.lblBookName.TabIndex = 2;
@@ -138,9 +138,9 @@ namespace Library
             this.txtBookName.BackColor = System.Drawing.Color.White;
             this.txtBookName.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtBookName.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this.txtBookName.Location = new System.Drawing.Point(315, 30);
+            this.txtBookName.Location = new System.Drawing.Point(325, 30);
             this.txtBookName.Name = "txtBookName";
-            this.txtBookName.Size = new System.Drawing.Size(375, 29);
+            this.txtBookName.Size = new System.Drawing.Size(365, 29);
             this.txtBookName.TabIndex = 3;
             // 
             // lblCategory
@@ -159,9 +159,9 @@ namespace Library
             this.cboCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cboCategory.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             this.cboCategory.FormattingEnabled = true;
-            this.cboCategory.Location = new System.Drawing.Point(90, 70);
+            this.cboCategory.Location = new System.Drawing.Point(105, 70);
             this.cboCategory.Name = "cboCategory";
-            this.cboCategory.Size = new System.Drawing.Size(210, 29);
+            this.cboCategory.Size = new System.Drawing.Size(200, 29);
             this.cboCategory.TabIndex = 5;
             // 
             // lblAuthor
@@ -169,7 +169,7 @@ namespace Library
             this.lblAuthor.AutoSize = true;
             this.lblAuthor.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblAuthor.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(75)))), ((int)(((byte)(59)))));
-            this.lblAuthor.Location = new System.Drawing.Point(315, 73);
+            this.lblAuthor.Location = new System.Drawing.Point(325, 73);
             this.lblAuthor.Name = "lblAuthor";
             this.lblAuthor.Size = new System.Drawing.Size(63, 20);
             this.lblAuthor.TabIndex = 6;
@@ -180,9 +180,9 @@ namespace Library
             this.txtAuthor.BackColor = System.Drawing.Color.White;
             this.txtAuthor.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtAuthor.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this.txtAuthor.Location = new System.Drawing.Point(385, 70);
+            this.txtAuthor.Location = new System.Drawing.Point(395, 70);
             this.txtAuthor.Name = "txtAuthor";
-            this.txtAuthor.Size = new System.Drawing.Size(305, 29);
+            this.txtAuthor.Size = new System.Drawing.Size(295, 29);
             this.txtAuthor.TabIndex = 7;
             // 
             // lblPublisher
@@ -201,9 +201,9 @@ namespace Library
             this.txtPublisher.BackColor = System.Drawing.Color.White;
             this.txtPublisher.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtPublisher.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this.txtPublisher.Location = new System.Drawing.Point(90, 110);
+            this.txtPublisher.Location = new System.Drawing.Point(105, 110);
             this.txtPublisher.Name = "txtPublisher";
-            this.txtPublisher.Size = new System.Drawing.Size(210, 29);
+            this.txtPublisher.Size = new System.Drawing.Size(200, 29);
             this.txtPublisher.TabIndex = 9;
             // 
             // lblPrice
@@ -211,7 +211,7 @@ namespace Library
             this.lblPrice.AutoSize = true;
             this.lblPrice.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblPrice.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(75)))), ((int)(((byte)(59)))));
-            this.lblPrice.Location = new System.Drawing.Point(315, 113);
+            this.lblPrice.Location = new System.Drawing.Point(320, 113);
             this.lblPrice.Name = "lblPrice";
             this.lblPrice.Size = new System.Drawing.Size(68, 20);
             this.lblPrice.TabIndex = 10;
@@ -222,9 +222,9 @@ namespace Library
             this.txtPrice.BackColor = System.Drawing.Color.White;
             this.txtPrice.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtPrice.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this.txtPrice.Location = new System.Drawing.Point(385, 110);
+            this.txtPrice.Location = new System.Drawing.Point(400, 110);
             this.txtPrice.Name = "txtPrice";
-            this.txtPrice.Size = new System.Drawing.Size(90, 29);
+            this.txtPrice.Size = new System.Drawing.Size(85, 29);
             this.txtPrice.TabIndex = 11;
             // 
             // lblRegisterDate
@@ -232,7 +232,7 @@ namespace Library
             this.lblRegisterDate.AutoSize = true;
             this.lblRegisterDate.Font = new System.Drawing.Font("Segoe UI", 8.5F, System.Drawing.FontStyle.Bold);
             this.lblRegisterDate.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(97)))), ((int)(((byte)(75)))), ((int)(((byte)(59)))));
-            this.lblRegisterDate.Location = new System.Drawing.Point(485, 113);
+            this.lblRegisterDate.Location = new System.Drawing.Point(495, 113);
             this.lblRegisterDate.Name = "lblRegisterDate";
             this.lblRegisterDate.Size = new System.Drawing.Size(46, 20);
             this.lblRegisterDate.TabIndex = 12;
@@ -243,9 +243,9 @@ namespace Library
             this.dtpPublishDate.CustomFormat = "yyyy-MM-dd";
             this.dtpPublishDate.Font = new System.Drawing.Font("Segoe UI", 9F);
             this.dtpPublishDate.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-            this.dtpPublishDate.Location = new System.Drawing.Point(540, 110);
+            this.dtpPublishDate.Location = new System.Drawing.Point(550, 110);
             this.dtpPublishDate.Name = "dtpPublishDate";
-            this.dtpPublishDate.Size = new System.Drawing.Size(150, 27);
+            this.dtpPublishDate.Size = new System.Drawing.Size(140, 27);
             this.dtpPublishDate.TabIndex = 13;
             // 
             // label2
@@ -264,9 +264,9 @@ namespace Library
             this.txtIntro.BackColor = System.Drawing.Color.White;
             this.txtIntro.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.txtIntro.Font = new System.Drawing.Font("Segoe UI", 9.5F);
-            this.txtIntro.Location = new System.Drawing.Point(90, 150);
+            this.txtIntro.Location = new System.Drawing.Point(105, 150);
             this.txtIntro.Name = "txtIntro";
-            this.txtIntro.Size = new System.Drawing.Size(600, 29);
+            this.txtIntro.Size = new System.Drawing.Size(585, 29);
             this.txtIntro.TabIndex = 15;
             // 
             // panel1
