@@ -1,4 +1,4 @@
-﻿namespace Library
+namespace Library
 {
     partial class Login
     {
@@ -34,6 +34,7 @@
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.chkShowPassword = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label1
@@ -52,6 +53,7 @@
             // 
             this.panel1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(250)))), ((int)(((byte)(241)))), ((int)(((byte)(221)))));
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panel1.Controls.Add(this.chkShowPassword);
             this.panel1.Controls.Add(this.linkForgotPwd);
             this.panel1.Controls.Add(this.linkSignUp);
             this.panel1.Controls.Add(this.btnExit);
@@ -67,6 +69,19 @@
             this.panel1.Size = new System.Drawing.Size(592, 337);
             this.panel1.TabIndex = 1;
             this.panel1.Paint += new System.Windows.Forms.PaintEventHandler(this.panel1_Paint);
+            // 
+            // chkShowPassword
+            // 
+            this.chkShowPassword.AutoSize = true;
+            this.chkShowPassword.Font = new System.Drawing.Font("Segoe UI", 8.5F);
+            this.chkShowPassword.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(92)))), ((int)(((byte)(70)))), ((int)(((byte)(48)))));
+            this.chkShowPassword.Location = new System.Drawing.Point(410, 137);
+            this.chkShowPassword.Name = "chkShowPassword";
+            this.chkShowPassword.Size = new System.Drawing.Size(65, 20);
+            this.chkShowPassword.TabIndex = 2;
+            this.chkShowPassword.Text = "Show";
+            this.chkShowPassword.UseVisualStyleBackColor = true;
+            this.chkShowPassword.CheckedChanged += new System.EventHandler(this.chkShowPassword_CheckedChanged);
             // 
             // linkForgotPwd
             // 
@@ -91,7 +106,7 @@
             this.linkSignUp.Location = new System.Drawing.Point(210, 294);
             this.linkSignUp.Name = "linkSignUp";
             this.linkSignUp.Size = new System.Drawing.Size(130, 20);
-            this.linkSignUp.TabIndex = 4;
+            this.linkSignUp.TabIndex = 5;
             this.linkSignUp.TabStop = true;
             this.linkSignUp.Text = "Create an Account";
             this.linkSignUp.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkSignUp_LinkClicked);
@@ -107,7 +122,7 @@
             this.btnExit.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnExit.Name = "btnExit";
             this.btnExit.Size = new System.Drawing.Size(92, 32);
-            this.btnExit.TabIndex = 2;
+            this.btnExit.TabIndex = 4;
             this.btnExit.Text = "Exit";
             this.btnExit.UseVisualStyleBackColor = false;
             this.btnExit.Click += new System.EventHandler(this.btnExit_Click);
@@ -123,7 +138,7 @@
             this.btnLogin.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnLogin.Name = "btnLogin";
             this.btnLogin.Size = new System.Drawing.Size(107, 32);
-            this.btnLogin.TabIndex = 2;
+            this.btnLogin.TabIndex = 3;
             this.btnLogin.Text = "Login";
             this.btnLogin.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
             this.btnLogin.UseVisualStyleBackColor = false;
@@ -139,7 +154,7 @@
             this.tbPwd.Name = "tbPwd";
             this.tbPwd.Size = new System.Drawing.Size(236, 22);
             this.tbPwd.TabIndex = 1;
-            this.tbPwd.Text = "201124";
+            this.tbPwd.UseSystemPasswordChar = true;
             // 
             // tbUserName
             // 
@@ -150,8 +165,7 @@
             this.tbUserName.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tbUserName.Name = "tbUserName";
             this.tbUserName.Size = new System.Drawing.Size(236, 22);
-            this.tbUserName.TabIndex = 1;
-            this.tbUserName.Text = "Keiji";
+            this.tbUserName.TabIndex = 0;
             // 
             // label5
             // 
@@ -195,7 +209,7 @@
             // 
             // pictureBox2
             // 
-            this.pictureBox2.Image = global::Library.Properties.Resources._70437489041218;
+            this.pictureBox2.Image = global::Library.Properties.Resources.user;
             this.pictureBox2.Location = new System.Drawing.Point(985, 195);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(175, 309);
@@ -205,7 +219,7 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = global::Library.Properties.Resources.Venedik_kitap_fuarı_logo_design___Bayram_Suleymanov;
+            this.pictureBox1.Image = global::Library.Properties.Resources.Book;
             this.pictureBox1.Location = new System.Drawing.Point(985, 35);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(175, 141);
@@ -215,10 +229,12 @@
             // 
             // Login
             // 
+            this.AcceptButton = this.btnLogin;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(62)))), ((int)(((byte)(42)))), ((int)(((byte)(30)))));
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.CancelButton = this.btnExit;
             this.ClientSize = new System.Drawing.Size(1697, 546);
             this.Controls.Add(this.pictureBox2);
             this.Controls.Add(this.pictureBox1);
@@ -226,7 +242,8 @@
             this.Controls.Add(this.label1);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Login";
-            this.Text = "Login";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Text = "Library Management System - Login";
             this.Load += new System.EventHandler(this.Login_Load);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
@@ -242,6 +259,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.TextBox tbPwd;
+        private System.Windows.Forms.CheckBox chkShowPassword;
         private System.Windows.Forms.TextBox tbUserName;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Label label3;

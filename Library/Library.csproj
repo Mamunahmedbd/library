@@ -91,9 +91,7 @@
     <Compile Include="Reader.Designer.cs">
       <DependentUpon>Reader.cs</DependentUpon>
     </Compile>
-    <Compile Include="..\..\..\..\..\..\..\..\..\SQLHelper.cs">
-      <Link>SQLHelper.cs</Link>
-    </Compile>
+    <Compile Include="SQLHelper.cs" />
     <Compile Include="SecurityHelper.cs" />
     <EmbeddedResource Include="AdminManage.resx">
       <DependentUpon>AdminManage.cs</DependentUpon>

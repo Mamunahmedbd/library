@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,6 +36,26 @@ namespace Library
             sqlConn.Close();
 
             return ds1;
+        }
+
+        // Overload to execute parameterized query and return DataSet
+        public static DataSet GetData(string query, SqlParameter[] parameters)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    if (parameters != null)
+                        cmd.Parameters.AddRange(parameters);
+
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                    {
+                        DataSet ds = new DataSet();
+                        adapter.Fill(ds);
+                        return ds;
+                    }
+                }
+            }
         }
 
         // New overload to accept a prepared SqlCommand (parameterized queries)

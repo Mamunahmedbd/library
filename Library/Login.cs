@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-
 
 namespace Library
 {
@@ -16,24 +11,110 @@ namespace Library
         public Login()
         {
             InitializeComponent();
+        }
 
+        private void Login_Load(object sender, EventArgs e)
+        {
+            tbUserName.Focus();
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            string sqlStr = string.Format("select * from AdminList where UserName = '{0}' and Password = '{1}'", this.tbUserName.Text, this.tbPwd.Text);
-            DataSet ds = new DataSet();
-            ds = SQLHelper.GetData(sqlStr);
-            if (ds.Tables[0] != null && ds.Tables[0].Rows.Count > 0)
+            string username = tbUserName.Text.Trim();
+            string password = tbPwd.Text;
+
+            if (string.IsNullOrWhiteSpace(username))
             {
-                this.Hide();
-                MainForm mForm = new MainForm();
-                mForm.Show();
+                MessageBox.Show("Please enter your Username.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                tbUserName.Focus();
+                return;
             }
-            else
+
+            if (string.IsNullOrWhiteSpace(password))
             {
-                MessageBox.Show("The user info is error.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Please enter your Password.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                tbPwd.Focus();
+                return;
             }
+
+            try
+            {
+                // Secure parameterized query preventing SQL Injection
+                string query = "SELECT AdminID, Username, Password, RealName FROM AdminList WHERE Username = @username";
+                SqlParameter[] parameters = new SqlParameter[]
+                {
+                    new SqlParameter("@username", username)
+                };
+
+                DataSet ds = SQLHelper.GetData(query, parameters);
+
+                if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                {
+                    DataRow userRow = ds.Tables[0].Rows[0];
+                    string storedPassword = userRow["Password"]?.ToString() ?? "";
+                    string adminId = userRow["AdminID"]?.ToString() ?? "";
+
+                    bool isPasswordValid = false;
+
+                    // Check PBKDF2 hashed password
+                    if (SecurityHelper.VerifyPassword(password, storedPassword))
+                    {
+                        isPasswordValid = true;
+                    }
+                    // Fallback for legacy plaintext password entries
+                    else if (password == storedPassword)
+                    {
+                        isPasswordValid = true;
+
+                        // Auto-upgrade legacy plaintext password to PBKDF2 hash
+                        try
+                        {
+                            string newHash = SecurityHelper.CreateHash(password);
+                            string updateSql = "UPDATE AdminList SET Password = @newHash WHERE AdminID = @adminId";
+                            SqlParameter[] updateParams = new SqlParameter[]
+                            {
+                                new SqlParameter("@newHash", newHash),
+                                new SqlParameter("@adminId", adminId)
+                            };
+                            SQLHelper.ExecuteNonQuery(updateSql, updateParams);
+                        }
+                        catch
+                        {
+                            // Silent fallback if hash upgrade fails
+                        }
+                    }
+
+                    if (isPasswordValid)
+                    {
+                        this.Hide();
+                        MainForm mainForm = new MainForm();
+                        mainForm.FormClosed += (s, args) => this.Close();
+                        mainForm.Show();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Invalid username or password.", "Login Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        tbPwd.Clear();
+                        tbPwd.Focus();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Invalid username or password.", "Login Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    tbPwd.Clear();
+                    tbUserName.Focus();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Unable to connect to the database. Please verify SQL Server service is running.\n\nError: " + ex.Message,
+                    "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void chkShowPassword_CheckedChanged(object sender, EventArgs e)
+        {
+            tbPwd.UseSystemPasswordChar = !chkShowPassword.Checked;
         }
 
         private void btnExit_Click(object sender, EventArgs e)
@@ -41,26 +122,20 @@ namespace Library
             Application.Exit();
         }
 
-        private void Login_Load(object sender, EventArgs e)
+        private void linkForgotPwd_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-
+            MessageBox.Show("Please contact your System Administrator to reset your password.",
+                "Password Reset", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void linkForgotPwd_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
+        private void linkSignUp_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            MessageBox.Show("Password recovery isn't set up yet — coming soon.", "Forgot Password",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void linkSignUp_LinkClicked(object sender, System.Windows.Forms.LinkLabelLinkClickedEventArgs e)
-        {
-            MessageBox.Show("Sign-up isn't set up yet — coming soon.", "Create Account",
-                MessageBoxButtons.OK, MessageBoxIcon.Information);
+            AdminManage adminForm = new AdminManage();
+            adminForm.ShowDialog();
         }
 
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
-
         }
     }
 }
